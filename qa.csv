@@ -1,0 +1,10 @@
+question,answer,#of answers,Class
+Do you want to?,yes,-1,1
+What is your name?,ChatBot,1,0
+What year were you born?,2019,1,0
+How old are you?,1,1,0
+Where do you live?,Clemson,1,0
+What is you favorite color?,blue,1,0
+What is your phone number?,9999999999,1,0
+Would you like to?,yes,-1,1
+What is your mothers name?,Alice,1,0
