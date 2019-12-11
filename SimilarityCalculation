@@ -1,0 +1,123 @@
+package edu.uniba.di.lacam.kdde.ws4j.demo;
+
+import edu.uniba.di.lacam.kdde.lexical_db.ILexicalDatabase;
+import edu.uniba.di.lacam.kdde.lexical_db.MITWordNet;
+import edu.uniba.di.lacam.kdde.ws4j.RelatednessCalculator;
+import edu.uniba.di.lacam.kdde.ws4j.similarity.*;
+import edu.uniba.di.lacam.kdde.ws4j.util.WS4JConfiguration;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+
+import java.util.Arrays;
+import java.util.List;
+import javax.sound.sampled.LineUnavailableException;
+
+public class SimilarityCalculationDemo {
+
+    private static RelatednessCalculator[] rcs;
+
+    static {
+        WS4JConfiguration.getInstance().setMemoryDB(false);
+        WS4JConfiguration.getInstance().setMFS(true);
+        ILexicalDatabase db = new MITWordNet();
+        rcs = new RelatednessCalculator[]{
+            new HirstStOnge(db), new LeacockChodorow(db), new Lesk(db), new WuPalmer(db),
+            new Resnik(db), new JiangConrath(db), new Lin(db), new Path(db)
+        };
+    }
+
+    public static void main(String[] args) throws LineUnavailableException, IOException {
+
+        long t = System.currentTimeMillis();
+        String q = "What is your moms name?";
+        ArrayList<String> b = new ArrayList<>();
+        split(q, b);
+
+        ArrayList<ArrayList<String>> dict = new ArrayList<>();
+        dictionary(dict);
+        String ans = "";
+        double sim = 0;
+        int n = 0;
+        ArrayList<Double> d = new ArrayList<>();
+        System.out.println("Training....");
+        for (int i = 0; i < dict.get(0).size(); i++) {
+            ArrayList<String> a = new ArrayList<>();
+            split(dict.get(0).get(i), a);
+            double s = 0;
+            for (int j = 0; j < b.size(); j++) {
+                for (int k = 0; k < a.size(); k++) {
+                    int y = k, z = j;
+                    Arrays.asList(rcs).forEach(rc -> d.add(rc.calcRelatednessOfWords(a.get(y), b.get(z))));
+                    double tn = d.get(0);
+                    d.clear();
+                    s += tn;
+                }
+            }
+            if (s > sim) {
+                sim = s;
+                ans = dict.get(1).get(i);
+            }
+
+        }
+        System.out.println("System trained.");
+        System.out.println(q);
+        System.out.println("The andwer is: " + ans + " with a score = " + sim);
+        System.out.println("\nDone in " + (System.currentTimeMillis() - t) + " msec.");
+
+    }
+
+    
+    public static double calcRespondTime(String out){
+        
+        return (double) out.length() * 1.05; //calc sendonds
+    }
+    public static List<String[]> readData() throws IOException {
+        int count = 0;
+        String file = "//Users/jeffreyyoung/Desktop/Clemson/Alexa_Bob/Questions/qa.csv";
+        List<String[]> content = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line = "";
+            while ((line = br.readLine()) != null) {
+                content.add(line.split(","));
+            }
+        } catch (FileNotFoundException e) {
+            //Some error logging
+        }
+        return content;
+    }
+
+    public static void dictionary(ArrayList<ArrayList<String>> d) throws FileNotFoundException, IOException {
+
+        List<String[]> l = readData();
+
+        d.add(new ArrayList<>());
+        d.add(new ArrayList<>());
+
+        for (int i = 0; i < l.size(); i++) {
+            d.get(0).add(l.get(i)[0]);
+            d.get(1).add(l.get(i)[1]);
+        }
+        System.out.println("FIN: Dictionary is built.");
+    }
+
+    public static void split(String s, ArrayList<String> a) {
+
+        String temp = "";
+        for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) != ' ') {
+                if (s.charAt(i) != ',' && s.charAt(i) != '.' && s.charAt(i) != '?') {
+                    temp += s.charAt(i);
+                }
+            } else {
+                a.add(temp);
+                temp = "";
+            }
+        }
+        //adds the last word in the statement
+        a.add(temp);
+
+    }
+}
