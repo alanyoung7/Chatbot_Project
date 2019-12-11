@@ -1,0 +1,82 @@
+import java.util.ArrayList;
+
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+/**
+ * Finds policy violations from Amazon Alexa interactions Kids section
+ *
+ * @author jeffreyyoung
+ */
+public class Policy_Parser {
+
+    public static void main(String[] args) {
+
+        String s = "Elected.\n"
+                + "Play a venture I gave\n"
+                + "Welcome to escape the office. Let's start your game.\n"
+                + "You're in a small office. There is a door to your left in a window in front of you. A desk sits below the window piled high with paperwork warning, gratuitous use of profanity ahead.\n"
+                + "Do you explore? The desk tried to climb out the window or attempt to escape through the door.\n"
+                + "You clamber on top of the desk and you climb out of the window, Expecting your feet to land on the terrace. But there is nothing there and you're falling so shit.";
+        String st = "Welcome to escape the office. Let's start your game. You're in a small office. There is a door to your left in a window in front of you. A desk sits below the window piled high with paperwork warning, gratuitous use of profanity ahead. Do you explore? The desk tried to climb out the window or attempt to escape through the door.";
+
+        System.out.println(st.length());
+        //23.5
+//policy1(s);
+    }
+
+    //finds any profanity within interaction kids skills
+    public static void policy1(String s) {
+
+        ArrayList<String> a = new ArrayList<>();
+        String temp = "";
+        for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) != ' ') {
+                if (s.charAt(i) != ',' && s.charAt(i) != '.' && s.charAt(i) != '?') {
+                    temp += s.charAt(i);
+                }
+            } else {
+                a.add(temp);
+                temp = "";
+            }
+        }
+        //adds the last word in the statement
+        a.add(temp);
+        if (findProf(a)) {
+            System.out.println("Policy Violation!!!!! This skill contains profanity and is available for children!");
+        } else {
+            System.out.println("This skill is not in violation of Policy 1");
+        }
+    }
+
+    //finds profanity
+    public static boolean findProf(ArrayList<String> a) {
+
+        ArrayList<String> words = makeWords();
+        for (int i = 0; i < a.size(); i++) {
+            System.out.println(a.get(i));
+
+            if (words.contains(a.get(i))) {
+                return true;
+            }
+        }
+        return false;
+
+    }
+
+    //makes list of profane words
+    public static ArrayList<String> makeWords() {
+        ArrayList<String> w = new ArrayList<>();
+        w.add("shit");
+        w.add("Shit");
+        w.add("Fuck");
+        w.add("fuck");
+        w.add("Ass");
+        w.add("ass");
+
+        return w;
+    }
+
+}
