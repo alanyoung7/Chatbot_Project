@@ -6,7 +6,7 @@ import time
 wordlist = []
 
 # reading csv file for name and making a list of skill
-with open('names.csv', encoding='utf-8-sig') as csv_file:
+with open('name.csv', encoding='utf-8-sig') as csv_file:
     csv_reader = csv.reader(csv_file)
     for row in csv_reader:
         wordlist.append(row)
@@ -38,12 +38,19 @@ for i in wordlist:
 	with mic as source:
 		# audio = r.record(source, offset = 0, duration=20)  
 		audio = r.listen(source)  
-
-	output = r.recognize_google(audio)
-	# ends speech-to-text process
+	# output = r.recognize_google(audio)
+	try:
+		output = r.recognize_google(audio)
+		print(word, " - ", output, "\n")
+	except sr.RequestError:
+		output = "API Unavailable"
+		print(output)
+	except sr.UnknownValueError:
+		output = "Could not recognize the voice!"
+		print(output)
+		# break
+	# # ends speech-to-text process
 	
-	print(word, " - ", output, "\n")
-
 	# writing the skill name and the output from alexa to the csv file
 	with open('output.csv', mode='a') as out:
 		writer = csv.writer(out, delimiter=',')
