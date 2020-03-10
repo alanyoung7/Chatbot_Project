@@ -15,7 +15,7 @@ try:
     abc = []    # Used for converting the tpye of elements from set to list
     filter1 = []  # Words with similarity greater than the threshold will be appended to it
     
-    sentence ="Where do you want to go ass, asshore or india"
+    sentence ="Where do you want to go moon, india or usa"
     
     # Prepocess the given text by splitiing it into individual sentences, converting to lower case, remving extra spaces and special symbols
     lines = sentence.split(".")
