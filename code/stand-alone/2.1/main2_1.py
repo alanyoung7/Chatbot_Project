@@ -141,8 +141,8 @@ def main():
 			tts_reply(answer)
 			temp = speech_to_text(word)
 			wrtie_to_file(temp)
-		else:
-			wrtie_to_file(textout) 
+		# else:
+		# 	wrtie_to_file(textout) 
 		# elif skill_check == 1 and description_check == 1 and bit_check == 1:
 			# wrtie_to_file(textout)
 
