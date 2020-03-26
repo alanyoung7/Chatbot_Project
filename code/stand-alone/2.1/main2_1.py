@@ -125,6 +125,10 @@ def main():
 		bit_check = bit_checker(0, 3)
 		
 		while bit_check != 0:
+			if skill_check == 1 and description_check == 1:
+				wrtie_to_file(textout)
+				skill_check = checker(textout[0],0)
+				description_check = checker(textout[1],1)
 			time.sleep(10)
 			bit_check = bit_checker(0, 3)
 
