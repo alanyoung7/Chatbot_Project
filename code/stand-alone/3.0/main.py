@@ -3,10 +3,6 @@ import pyttsx3
 import speech_recognition as sr
 import time
 import os.path
-BING_KEY='483904ca5f024e209772f326e48b4e29'
-houndify_client_ID = '-HLoZRPKbMkIUm4gCNyALA=='
-houndify_client_KEY = 'djhC6tM_INLmnmSBUT2P08CwJwsM4ZrkBEEbkzoPpJCCzIdC1jTP0iDWqPbwSHcmk66HP6eMCSh48sfzU7mRsQ=='
-key_wit='236905620844902'
 
 STOP_INTENT='Hey Alexa, stop'
 OPEN_INTENT='Hey Alexa, open '
@@ -22,7 +18,7 @@ def readfile(fileIN):
 
 def wrtie_to_file(fileOut):
 	file_exists = os.path.isfile('output.csv')
-	with open('output.csv', mode='a', newline='') as out:
+	with open('output.csv', mode='a+', newline='\n') as out:
 		fieldnames = ['Skill Name', 'Description', 'Time', 'Bit', 'Answer']
 		writer = csv.DictWriter(out, fieldnames=fieldnames, delimiter=',')
 		if not file_exists:
@@ -34,7 +30,7 @@ def fileexist():
 	if os.path.isfile('output.csv'):
 		print("file exists")
 	else:
-		with open('output.csv', mode='a', newline='') as out:
+		with open('output.csv', mode='a+', newline='\n') as out:
 			fieldnames = ['Skill Name', 'Description', 'Time', 'Bit', 'Answer']
 			writer = csv.DictWriter(out, fieldnames=fieldnames, delimiter=',')
 			writer.writeheader()
@@ -46,6 +42,10 @@ def text_to_speech(sentence):
 	# ends text-to-speech process
 
 def speech_to_text(skill_name):
+	# One time initialization for speech-to-text
+	r = sr.Recognizer()
+	mic = sr.Microphone()
+
 	print("I am Listening.....")
 	start = time.time()
 	with mic as source:
@@ -53,12 +53,12 @@ def speech_to_text(skill_name):
 	end = time.time()
 	total_time = 0
 	bit = 1	
-	Answer = "None"
+	Answer = " "
 	try:
 		output = r.recognize_google(audio)
 		total_time = end - start
 		bit = 1
-		Answer = "None"
+		Answer = " "
 	except sr.RequestError:
 		output = "API Unavailable"
 	except sr.UnknownValueError:
@@ -66,12 +66,19 @@ def speech_to_text(skill_name):
 	return [skill_name,output,total_time,bit,Answer] 
 
 def checker(description,row_num):
+	# total_rows = calculate_total_rows()
+	# counter=0
+	# with open('output.csv', 'rt') as f:
+	# 	reader = csv.reader(f, delimiter=',')
+	# 	for row in reader:
+			
 	boolean = 1
 	with open('output.csv', 'rt') as f:
 		reader = csv.reader(f, delimiter=',')
 		for row in reader:
 			if description == row[row_num]:
-				print("in checker ",description, row[row_num])
+				# print("CHECKER_ inside checker ",description, row[row_num])
+				print("CHECKER_ inside checker ",row)
 				boolean = 0
 				break
 			else:
@@ -92,23 +99,39 @@ def bit_checker(value, row_num):
 				break
 			else:
 				boolean = 1
-	f.close
+	f.close()
 	return boolean
 
+def calculate_total_rows():
+	with open('output.csv', 'rt') as f:
+		reader = csv.reader(f, delimiter=',')
+		rows = list(reader)
+		total_rows = len(rows)
+	return total_rows
+
 def bit_checke1(value, row_num):
-	
+	total_rows = calculate_total_rows()
+	counter=0
 	with open('output.csv', 'rt') as f:
 		reader = csv.reader(f, delimiter=',')
 		for row in reader:
-			if row[row_num] == 'Bit':
-				continue
-			elif int(value) == int(row[row_num]):
-				# print("in SECOND checker ", row[row_num])
+			if counter == total_rows and int(value) == int(row[row_num]):
 				return 0
-				break
 			else:
 				return 1
-	f.close
+
+	# with open('output.csv', 'rt') as f:
+	# 	reader = csv.reader(f, delimiter=',')
+	# 	for row in reader:
+	# 		if row[row_num] == 'Bit':
+	# 			continue
+	# 		elif int(value) == int(row[row_num]):
+	# 			print("BIT_CHECKER1_ Insider bit checher",row)
+	# 			return 0
+	# 			break
+	# 		else:
+	# 			return 1
+	# f.close()
 	# return final
 
 def getAnswer(description,row_num):
@@ -120,6 +143,22 @@ def getAnswer(description,row_num):
 				ans = row[4]
 	f.close()
 	return ans
+
+# def getAnswer(line_num):
+# 	# ans="None"
+# 	with open('output.csv', 'rt') as f:
+# 		reader = csv.reader(f, delimiter=',')
+# 		for row in reader:
+# 			if line_num == reader.line_num:
+# 				return row[4]
+
+# def clean_string(text):
+# 	text = ''.join([word for word in text if word not in string.punctuation])
+# 	text = text.lower()
+# 	text = ' '.join([word for word in text.split() if word not in stopwords])
+# 	return text
+
+
 # def sim(description,row_num):
 # 	vectorizer_d = CountVectorizer().fit_transform(description)
 # 	vectors_d = vectorizer.toarray()
@@ -144,33 +183,47 @@ def main():
 	wordlist = readfile("name.csv")
 
 	for i in wordlist:
-		word = str(i)[2:-2]
-		
-		speak = OPEN_INTENT + word
+		skill_name = str(i)[2:-2]
+		speak = OPEN_INTENT + skill_name
 		text_to_speech(speak)
-		textout = speech_to_text(word)
+		textout = speech_to_text(skill_name)
 		wrtie_to_file(textout)
 
 		# check if in file or not
 		skill_check = checker(textout[0],0)
 		description_check = checker(textout[1],1)
-		bit_check = bit_checker(0, 3)
-
-		if skill_check == 1 and description_check == 1:
-			wrtie_to_file(textout)
 		
-		while bit_check != 0:
-			text_to_speech(REPEAT_INTENT)
-			speech_to_text(word)
+		print("Step1: Going in the loop")
+		while True:
+			print("Step2: inside the loop")
+			# if skill_check == 1 and description_check == 1:
+			# 	wrtie_to_file(textout)
 			bit_check = bit_checke1(0, 3)
+			print("Step3 before Bit is: ",bit_check)
+			while bit_check != 0 and getAnswer(textout[1], 1) == ' ':
+				text_to_speech(REPEAT_INTENT)
+				speech_to_text(skill_name)
+				bit_check = bit_checke1(0, 3)
+			print("Step4 after Bit is: ",bit_check, textout)
 
-		print(word, " - ", textout[1], "\n")
+			print(skill_name, " - ", textout[1], "\n")
+			answer = getAnswer(textout[1], 1)
+			print("Step5 Answer: ", answer)
 
-		# check for conditions
-		answer = getAnswer(textout[1], 1)
-		text_to_speech(answer)
-		temp = speech_to_text(word)
-		wrtie_to_file(temp)
+			text_to_speech(answer)
+			next_node = speech_to_text(skill_name)
+			print("Step6: ",skill_name, " - ", next_node[1], "\n")
+			
+			textout = next_node
+			print("Step7: ", textout)
+			# text_to_speech(REPEAT_INTENT)
+			
+			description_check = checker(next_node[1],1)
+			print("Step8: ", description_check)
+			if description_check == 0:
+				break
+			else:
+				wrtie_to_file(next_node)
 
 		text_to_speech(STOP_INTENT)
 		time.sleep(7)
@@ -183,15 +236,8 @@ engine = pyttsx3.init()
 engine.setProperty('rate', 160)    # Speed percent (can go over 100)
 engine.setProperty('volume', 0.9)  # Volume 0-1
 
-# One time initialization for speech-to-text
-r = sr.Recognizer()
-mic = sr.Microphone()
-
-with mic as source: 
-	r.adjust_for_ambient_noise(source)
-	print("Set minimum energy threshold to {}".format(r.energy_threshold))
+# with mic as source: 
+# 	r.adjust_for_ambient_noise(source)
+# 	print("Set minimum energy threshold to {}".format(r.energy_threshold))
 fileexist()
 main()
-
-
-
